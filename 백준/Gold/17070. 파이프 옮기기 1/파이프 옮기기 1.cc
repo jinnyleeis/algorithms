@@ -8,7 +8,9 @@ int ret,n;
 int dy[]={-1,-1,0,1,1,1,0,-1};
 int dx[]={0,1,1,1,0,-1,-1,-1};
 
-int m[100][100];
+int m[20][20];
+
+int dp[20][20][3]; // 상태값을 dp에 저장 
 
 /*
 목표 : 한쪽 끝이 (n,n)에 닿게 하는 것이 목표임 
@@ -43,9 +45,13 @@ state가 무엇인지에 따라 차지하고 있는 크기도 다름
 int move(int y,int x,int state){
     
     
-    
-    // 오버플로우 처리!!
+
+ // 오버플로우 처리!! - 범위 벗어나는 오버플로우 처리하는거 까먹지 말자
     if(y>=n||x>=n)return 0;
+    if (dp[y][x][state] != -1) return dp[y][x][state];
+    
+    int ret = 0;
+
     if(state==0){
     if(m[y][x-1]==1||m[y][x]==1)return 0;
     }else if(state==1){
@@ -66,42 +72,53 @@ int move(int y,int x,int state){
     switch (state) {
         case 0: // 가로 
         
+        int c1,c2;
         // 계속 가로 2 
-        ret+=move(y+dy[2],x+dx[2],0);
+        c1=move(y+dy[2],x+dx[2],0);
         // 대각선 3 
-        ret+=move(y+dy[3],x+dx[3],2);
-        
+        c2=move(y+dy[3],x+dx[3],2);
+        dp[y][x][0]=c1+c2;
+        ret+=dp[y][x][0];
             break;  
             
             
         case 1: // 세로 
-           
+        
+        int c3,c4;
            
         // 3 대각선 
-        ret+=move(y+dy[3],x+dx[3],2);
+      c3=move(y+dy[3],x+dx[3],2);
         
         // 4 세로 
-        ret+=move(y+dy[4],x+dx[4],1);
-        
+       c4=move(y+dy[4],x+dx[4],1);
+       
+       
+        dp[y][x][1]=c3+c4;
+        ret+=dp[y][x][1];
           
             break;
         case 2: // 대각선 
-            
+        
+        int c5,c6,c7;    
         // 가로 2 
-        ret+=move(y+dy[2],x+dx[2],0);
+        c5=move(y+dy[2],x+dx[2],0);
         
         // 대각선 3 
-        ret+=move(y+dy[3],x+dx[3],2);
+        c6=move(y+dy[3],x+dx[3],2);
         
          // 세로 4 
-        ret+=move(y+dy[4],x+dx[4],1);
+        c7=move(y+dy[4],x+dx[4],1);
+        
+        
+        dp[y][x][2]=c5+c6+c7;
+        ret+=dp[y][x][2];
             break;
         default: // 없음 
             break;
     }
     
    
-    return 0;
+return dp[y][x][state] = ret;
 }
 
 
@@ -117,8 +134,11 @@ int main() {
        }
     }
     
+       // DP 테이블 초기화 (-1로)
+    memset(dp, -1, sizeof(dp));
+    
     move(0,1,0); // 맨 처음엔 가로로 시작한다. 
-    cout<<ret<<"\n";
+    cout<<dp[0][1][0]<<"\n";
   
     
     return 0;
