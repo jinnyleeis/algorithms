@@ -4,67 +4,67 @@
 using namespace std;
 
 int main(){
-    int N, k;  // 사진틀의 개수와 전체 추천 횟수
-    cin >> N >> k;
+    int n, m;
+    cin >> n >> m;
     
-    // 학생 번호는 1부터 100까지 있으므로 배열 크기를 101로 설정
-    int rec[101] = {0};   // 각 학생의 추천 횟수
-    int when[101] = {0};  // 사진틀에 게시된 시점 (추천 순서)
-    int cnt = 0;          // 현재 사진틀에 채워진 사진 수
-    
-    for (int i = 1; i <= k; ++i) {
-        int stdn;
-        cin >> stdn;
+    vector<int> q;       // 사진틀에 게시된 학생 번호
+    vector<int> num;     // 각 학생의 추천 횟수
+    vector<int> posted;  // 각 학생이 사진틀에 게시된 시각 (추천이 들어온 순서, 0부터 시작)
+
+    for (int i = 0; i < m; i++){
+        int student;
+        cin >> student;
         
-        // 이미 사진틀에 게시된 학생인 경우 추천 횟수 증가
-        if(rec[stdn] > 0){
-            rec[stdn]++;
+        // 이미 사진틀에 게시되어 있는 경우
+        auto it = find(q.begin(), q.end(), student);
+        if (it != q.end()){
+            int idx = it - q.begin();
+            num[idx]++;  // 추천 횟수 증가
         } 
         else {
-            // 새 사진틀이 남아있는 경우
-            if (cnt < N) {
-                rec[stdn]++;
-                when[stdn] = i;
-                cnt++;
+            // 사진틀에 빈 공간이 있는 경우 바로 추가
+            if (q.size() < n){
+                q.push_back(student);
+                num.push_back(1);
+                posted.push_back(i); // 현재 추천 순서를 기록
             }
             else {
-                // 사진틀이 꽉 찬 경우, 현재 사진틀에 게시된 학생들 중에서
-                // 추천 수가 가장 적고 (동률이면 게시된 지 오래된) 학생을 찾아서 삭제한다.
-                int change = 0;
-                int reco = 1001; // 추천횟수의 최댓값보다 큰 값으로 초기화
-                for (int j = 1; j <= 100; j++) {
-                    if (rec[j] > 0) {  // j번 학생이 사진틀에 게시되어 있다면
-                        if (rec[j] < reco) {  // 추천 횟수가 더 적다면
-                            reco = rec[j];
-                            change = j;
-                        } else if (rec[j] == reco) {  // 추천 횟수가 같다면
-                            if (when[j] < when[change]) {  // 더 오래된 경우
-                                change = j;
-                            }
-                        }
+                // 사진틀이 꽉 찼다면, 삭제 후보를 결정
+                int removeIndex = 0;
+                int minRec = num[0];
+                int minTime = posted[0];
+                
+                for (int j = 1; j < q.size(); j++){
+                    // 추천 횟수가 더 적은 경우
+                    if (num[j] < minRec){
+                        minRec = num[j];
+                        minTime = posted[j];
+                        removeIndex = j;
+                    }
+                    // 추천 횟수가 같으면, 게시된 시간이 더 오래된(작은) 경우
+                    else if (num[j] == minRec && posted[j] < minTime){
+                        minTime = posted[j];
+                        removeIndex = j;
                     }
                 }
-                // 사진틀에서 삭제
-                rec[change] = 0;
-                when[change] = 0;
-                // 새 후보 사진을 게시 (추천 횟수를 1로 초기화)
-                rec[stdn] = 1;
-                when[stdn] = i;
+                
+                // 결정된 후보 삭제
+                q.erase(q.begin() + removeIndex);
+                num.erase(num.begin() + removeIndex);
+                posted.erase(posted.begin() + removeIndex);
+                
+                // 새 학생 추가
+                q.push_back(student);
+                num.push_back(1);
+                posted.push_back(i);
             }
         }
     }
     
-    // 최종 사진틀에 남아있는 학생들의 번호를 증가하는 순서대로 출력
-    vector<int> result;
-    for (int i = 1; i <= 100; i++) {
-        if (rec[i] > 0)
-            result.push_back(i);
-    }
-    
-    sort(result.begin(), result.end());
-    
-    for (int num : result)
-        cout << num << " ";
+    // 최종 사진틀에 남은 학생 번호를 오름차순으로 정렬 후 출력
+    sort(q.begin(), q.end());
+    for (int student : q)
+        cout << student << " ";
     
     return 0;
 }
