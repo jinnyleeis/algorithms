@@ -38,6 +38,8 @@ int N,M;
 int main(){
     
     
+    ios::sync_with_stdio(false);cin.tie(NULL);cout.tie(NULL);
+    
     fill(&dist[0][0], &dist[0][0] + 101 * 101, 1e8);
     fill(&adj[0][0], &adj[0][0] + 101 * 101, 1e8);
     
@@ -83,6 +85,10 @@ int main(){
     
     for(int s=1; s<=N; s++){
         for(int e=1; e<=N; e++){
+            
+            // 주의 : 1e5도 유효한 값이므로, 
+            // 모든 노드가 1e5라면, 1e5*100번 방문해서, 거리가 이렇게될수도!!
+            // so, >=1e5는 안된다!
             if(dist[s][e]>=1e8){
                 cout<<0<<" ";
             }else{
@@ -101,4 +107,4 @@ int main(){
     return 0;
 }
     
-   
+    
