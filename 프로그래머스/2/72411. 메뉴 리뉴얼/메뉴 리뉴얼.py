@@ -1,76 +1,49 @@
-"""
- 이전에 각 손님들이 주문할 때 가장 많이 함께 주문한 단품메뉴들을 코스요리 메뉴로 구성하기로
+from itertools import combinations                               # L01
+from collections import defaultdict                              # L02
 
--  최소 2가지 이상의 단품메뉴로 구성
--  최소 2명 이상의 손님으로부터 주문된 [단품메뉴 조합]에 대해서만 코스요리 메뉴 후보에 포함
+def solution(orders, course):                                    # L03
+    """
+    메뉴 리뉴얼: 주문 문자열들에서 course 길이별로
+    가장 많이 함께 주문된 조합을 뽑아 사전순 반환.
+    """                                                          # L04-06
+    cs = set(course)                                             # L07
+    foodMap = {k: defaultdict(int) for k in course}              # L08
+    maxCnt  = {k: 0 for k in course}                             # L09
 
-- 각 조합에 같이 포함되어있기만 하면 됨.
-해당 조합은 2개 이상
-조합 a 가 조합 b 내에 포함되어 있어도 됨
+    # 주문 카운팅
+    for s in orders:                                             # L10
+        arr = sorted(s)                                          # L11
+        for k in course:                                         # L12
+            if k > len(arr):                                     # L13
+                continue                                         # L14
+            for comb in combinations(arr, k):                    # L15
+                key = ''.join(comb)                              # L16
+                foodMap[k][key] += 1                             # L17
+                if foodMap[k][key] > maxCnt[k]:                  # L18
+                    maxCnt[k] = foodMap[k][key]                  # L19
 
+    # 후보 추출
+    answer = []                                                  # L20
+    for k in course:                                             # L21
+        m = maxCnt[k]                                            # L22
+        if m < 2:                                                # L23
+            continue                                             # L24
+        for key, val in foodMap[k].items():                      # L25
+            if val == m:                                         # L26
+                answer.append(key)                               # L27
 
-각 손님들이 [주문한 단품메뉴들]이 문자열 형식으로 담긴 배열 orders
-추가하고 싶어하는 코스요리를 구성하는 단품메뉴들의 [갯수]가 담긴 배열 course
+    return sorted(answer)                                        # L28
 
-새로 추가하게 될 코스요리의 메뉴 구성을 문자열 형태로 배열에 담아 return 
+# 샘플 실행
+if __name__ == "__main__":                                       # L29
+    ex1_orders = ["ABCFG","AC","CDE","ACDE","BCFG","ACDEH"]      # L30
+    ex1_course = [2,3,4]                                         # L31
+    print(solution(ex1_orders, ex1_course))                      # L32
 
------------------------------------------------------------------
+    ex2_orders = ["ABCDE","AB","CD","ADE","XYZ","XYZ","ACD"]     # L33
+    ex2_course = [2,3,5]                                         # L34
+    print(solution(ex2_orders, ex2_course))                      # L35
 
-정답은 각 코스요리 메뉴의 구성을 문자열 형식으로 배열에 담아 
-사전 순으로 오름차순 정렬해서 return
-
-배열의 각 원소에 저장된 문자열 또한 
-알파벳 오름차순으로 정렬되어야 합니다.
-
-만약 가장 많이 함께 주문된 메뉴 구성이 여러 개라면, 
-모두 배열에 담아 return 하면 됩니다.
-
-orders와 course 매개변수는 
-return 하는 배열의 길이가 1 이상이 되도록 주어집니다.
-"""
-
-from itertools import combinations
-from collections import Counter
-    
-
-def solution(orders, course):
-    answer=[]
-    raw_combi = []
-    # 조합을 만들자. 각 그것에 대해. 
-    for n in course:
-        for e in orders:
-             if len(e) >= n:  
-                e=sorted(e)
-                raw_combi.extend(combinations(e,n))
-            
-    #print(raw_combi)
-    
-    res = Counter(raw_combi)
-    for c in course:
-        # 길이가 c인 조합만 추리기 -> 이유? 그 길이에서의 최빈값을 추리기 위해
-        candidates = [comb for comb, cnt in res.items() if len(comb) == c]
-        if not candidates:
-            continue
-            
-        # 최대 등장 빈도. 문자의 길이 최대가 아닌.
-        max_candidates_per_c = max([res[comb] for comb in candidates])
-        
-        # 해당 최대 등장빈도에 해당하는 해당 c 길이의 요소들 
-        # answer 배열에 담기
-        if max_candidates_per_c >=2:
-            for comb in candidates:
-                if res[comb] == max_candidates_per_c:
-                    answer.append("".join(comb))
-                    
-    # 인덴트 위치 주의
-    return sorted(answer)
-            
-        
-    #print(res)
-    
-            
-    
-            
-    
-
-    return answer
+    ex3_orders = ["XYZ","XWY","WXA"]                             # L36
+    ex3_course = [2,3,4]                                         # L37
+    print(solution(ex3_orders, ex3_course))                      # L38
