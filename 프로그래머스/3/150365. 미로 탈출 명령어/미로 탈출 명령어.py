@@ -1,41 +1,43 @@
 def solution(n, m, x, y, r, c, k):
-    # --- 전처 심판: 처음부터 물리적으로 불가능한가? ---
-    def manhattan(a, b, c, d):
-        return abs(a - c) + abs(b - d)
+    # 1-based
+    def dist(ax, ay, bx, by):
+        return abs(ax - bx) + abs(ay - by)
 
-    need0 = manhattan(x, y, r, c)
+    need0 = dist(x, y, r, c)
     if need0 > k or ((k - need0) % 2 == 1):
         return "impossible"
 
-    # --- 심판 규칙: 다음 칸에서 남은 걸음으로 목표에 도달 가능? ---
-    def can_reach(nx, ny, rem):
-        need = manhattan(nx, ny, r, c)
-        return need <= rem and ((rem - need) % 2 == 0)
+    # 사전순: d < l < r < u
+    moves = [('d', 1, 0), ('l', 0, -1), ('r', 0, 1), ('u', -1, 0)]
 
-    # 사전 순 최소가 되도록 d, l, r, u 순으로 시도
-    moves = [
-        ('d', 1, 0),
-        ('l', 0, -1),
-        ('r', 0, 1),
-        ('u', -1, 0),
-    ]
+    # 현재 층: 각 칸의 사전순 최소 문자열(없으면 None)
+    cur = [[None] * (m + 1) for _ in range(n + 1)]
+    cur[x][y] = ""  # 시작점, 0글자
 
-    curx, cury = x, y
-    remain = k
-    path = []
+    # t 번 이동을 마친 뒤의 표에서 -> t+1 로 확장
+    for t in range(k):
+        rem_after = k - (t + 1)  # 다음 칸에서 남을 이동 수
+        nxt = [[None] * (m + 1) for _ in range(n + 1)]
+        for i in range(1, n + 1):
+            row = cur[i]
+            for j in range(1, m + 1):
+                base = row[j]
+                if base is None:
+                    continue
+                # 현재 (i,j)에서 네 방향 시도
+                for ch, dx, dy in moves:
+                    ni, nj = i + dx, j + dy
+                    if not (1 <= ni <= n and 1 <= nj <= m):
+                        continue
+                    # 다음 칸에서 남은 rem_after 로 목표에 도달 가능?
+                    need = dist(ni, nj, r, c)
+                    if need > rem_after or ((rem_after - need) % 2 == 1):
+                        continue
+                    cand = base + ch
+                    best = nxt[ni][nj]
+                    if best is None or cand < best:
+                        nxt[ni][nj] = cand
+        cur = nxt
 
-    # --- 말 놓기(컷) k번: 매번 사전 순으로 가능한 첫 컷을 확정 ---
-    for _ in range(k):
-        for ch, dx, dy in moves:
-            nx, ny = curx + dx, cury + dy
-            if 1 <= nx <= n and 1 <= ny <= m and can_reach(nx, ny, remain - 1):
-                path.append(ch)
-                curx, cury = nx, ny
-                remain -= 1
-                break
-        else:
-            # 어떤 방향도 심판 통과 못하면 불가능
-            return "impossible"
-
-    return "".join(path)
+    return cur[r][c] if cur[r][c] is not None else "impossible"
 
