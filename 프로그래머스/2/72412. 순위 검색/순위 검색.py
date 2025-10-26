@@ -29,7 +29,7 @@ def solution(info, query):                                        # L04
         lang, job, career, food, x = row.replace(' and ', ' ').split()  # L20
         x = int(x)                                                # L21
         key = (lang, job, career, food)                           # L22
-        scores = db.get(key, [])                                  # L23
+        scores = db[key]      # L23
 
         # x 이상이 처음 나타나는 위치
         i = bisect_left(scores, x)                                # L24
